@@ -1,7 +1,9 @@
+import { Mensagens } from './../enums/mensagens.js';
 import { NegociacoesView } from './../views/negociacoes-view.js';
 import { Negociacao } from "../models/negociacao.js";
 import { Negociacoes } from "../models/negociacoes.js";
 import { MensagemView } from '../views/mensagem-view.js';
+import { DiasDaSemana } from '../enums/dias-da-semana.js';
 export class NegociacaoController {
     constructor() {
         this.negociacoes = new Negociacoes;
@@ -14,10 +16,13 @@ export class NegociacaoController {
     }
     adiciona() {
         const negociacao = this.criaNegociacao();
+        if (!this.validarDiasUteis(negociacao.data)) {
+            this.mensagemView.update(Mensagens.MENSAGEM_DIA_NAO_UTEL);
+            return;
+        }
         this.negociacoes.adiciona(negociacao);
-        this.negociacoesView.update(this.negociacoes);
-        this.mensagemView.update('Negociação adicionada com sucesso!');
         this.limparFormulario();
+        this.atualizarView();
     }
     criaNegociacao() {
         const exp = /-/g;
@@ -31,5 +36,12 @@ export class NegociacaoController {
         this.inputQuantidade.value = '';
         this.inputValor.value = '';
         this.inputData.focus();
+    }
+    atualizarView() {
+        this.negociacoesView.update(this.negociacoes);
+        this.mensagemView.update(Mensagens.MENSAGEM_SUCESSO_NEGOCIACAO);
+    }
+    validarDiasUteis(data) {
+        return data.getDay() > DiasDaSemana.DOMINGO && data.getDay() < DiasDaSemana.SABADO;
     }
 }
