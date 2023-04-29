@@ -1,12 +1,11 @@
-import { Mensagens } from './../enums/mensagens.js';
-import { NegociacoesView } from './../views/negociacoes-view.js';
-import { Negociacao } from "../models/negociacao.js";
-import { Negociacoes } from "../models/negociacoes.js";
-import { MensagemView } from '../views/mensagem-view.js';
 import { DiasDaSemana } from '../enums/dias-da-semana.js';
+import { Negociacao } from '../models/negociacao.js';
+import { Negociacoes } from '../models/negociacoes.js';
+import { MensagemView } from '../views/mensagem-view.js';
+import { NegociacoesView } from '../views/negociacoes-view.js';
 export class NegociacaoController {
     constructor() {
-        this.negociacoes = new Negociacoes;
+        this.negociacoes = new Negociacoes();
         this.negociacoesView = new NegociacoesView('#negociacoesView', true);
         this.mensagemView = new MensagemView('#mensagemView');
         this.inputData = document.querySelector('#data');
@@ -16,13 +15,18 @@ export class NegociacaoController {
     }
     adiciona() {
         const negociacao = Negociacao.criaDe(this.inputData.value, this.inputQuantidade.value, this.inputValor.value);
-        if (!this.validarDiasUteis(negociacao.data)) {
-            this.mensagemView.update(Mensagens.MENSAGEM_DIA_NAO_UTEL);
+        if (!this.ehDiaUtil(negociacao.data)) {
+            this.mensagemView
+                .update('Apenas negociações em dias úteis são aceitas');
             return;
         }
         this.negociacoes.adiciona(negociacao);
         this.limparFormulario();
-        this.atualizarView();
+        this.atualizaView();
+    }
+    ehDiaUtil(data) {
+        return data.getDay() > DiasDaSemana.DOMINGO
+            && data.getDay() < DiasDaSemana.SABADO;
     }
     limparFormulario() {
         this.inputData.value = '';
@@ -30,11 +34,8 @@ export class NegociacaoController {
         this.inputValor.value = '';
         this.inputData.focus();
     }
-    atualizarView() {
+    atualizaView() {
         this.negociacoesView.update(this.negociacoes);
-        this.mensagemView.update(Mensagens.MENSAGEM_SUCESSO_NEGOCIACAO);
-    }
-    validarDiasUteis(data) {
-        return data.getDay() > DiasDaSemana.DOMINGO && data.getDay() < DiasDaSemana.SABADO;
+        this.mensagemView.update('Negociação adicionada com sucesso');
     }
 }
